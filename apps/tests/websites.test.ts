@@ -11,4 +11,9 @@ describe("Website gets created", ()=>{
         
       }
     })
+
+    it("Website not created if url is not present", async()=>{
+        const response = await axios.post(`${BASE_URL}/website`)
+        expect(response.data.id).not.toBeNull()
+    })
 }) 
