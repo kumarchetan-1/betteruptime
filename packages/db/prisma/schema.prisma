@@ -15,15 +15,18 @@ datasource db {
 }
 
 model User {
-  id            String @id  @default(uuid())
-  email         String  @unique
+  id            String @id  @default(uuid()) 
+  username      String  @unique
   password      String
   name          String?
+  websites      Website[]
 }
 
 model Website{
   id            String  @id  @default(uuid())
   url           String
+  user_id       String
+  user          User @relation(fields: [user_id], references: [id])
   createdAt     DateTime @default(now())
   ticks         WebsiteTick[]
 }
@@ -42,6 +45,7 @@ model  WebsiteTick{
   region_id         String
   website           Website @relation(fields: [website_id], references: [id])
   region            Region @relation(fields: [region_id], references: [id])
+  createdAt         DateTime @default(now())
 }
 
 

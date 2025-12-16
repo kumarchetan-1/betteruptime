@@ -1,4 +1,4 @@
-import Router from "express"
+import { Router } from "express"
 import websiteRouter from "./website"
 import userRouter from "./user"
 const router = Router()

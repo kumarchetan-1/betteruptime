@@ -1,1 +1,2 @@
-PORT 
+PORT = 3000
+JWT_SECRET = "jwtsecret4343352"
