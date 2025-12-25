@@ -10,13 +10,19 @@ env.config()
 const router =  Router()
 
 router.post("/signup", async(req, res)=>{
-    const data = AuthInput.safeParse(req.body.data)
-    if (!data.data?.username || !data.data.password) {
+    const result = AuthInput.safeParse(req.body.data)
+    if (!result.success) {
        res.status(403).json({ message: "username and password are required"})
        return
     }
 
-    const hashedPassword = await bcrypt.hash(data.data?.password, 10)
+    const data = result.data
+    if (!data.username || !data.password) {
+       res.status(403).json({ message: "username and password are required"})
+       return
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10)
     if (!hashedPassword) {
         res.status(500).json({ message: "Failed to hash password"})
        return
@@ -24,7 +30,7 @@ router.post("/signup", async(req, res)=>{
 
     const existingUser = await prismaClient.user.findFirst({
         where:{
-            username: data.data.username
+            username: data.username
         }
     })
 
@@ -38,8 +44,8 @@ router.post("/signup", async(req, res)=>{
 
     const user = await prismaClient.user.create({
         data:{
-            name: data.data.name || "",
-            username: data.data.username,
+            name: data.name || "",
+            username: data.username,
             password: hashedPassword
         }
     })
@@ -50,19 +56,21 @@ router.post("/signup", async(req, res)=>{
 })
 
 router.post("/signin", async(req, res)=>{
-    const data = AuthInput.safeParse(req.body.data)
-    if (!data.success) {
+    const result = AuthInput.safeParse(req.body.data)
+    if (!result.success) {
        res.status(400).json({ message: "Invalid data format"})
        return
     }
-    if (!data.data.username || !data.data.password) {
+    
+    const data = result.data
+    if (!data.username || !data.password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
   
 
     const user = await prismaClient.user.findFirst({
         where:{
-            username: data.data.username
+            username: data.username
         }
     })
     if (!user) {
@@ -70,7 +78,7 @@ router.post("/signin", async(req, res)=>{
         return
     }
 
-    const isPasswordCorrect = await bcrypt.compare(data.data.password, user.password)
+    const isPasswordCorrect = await bcrypt.compare(data.password, user.password)
     if (!isPasswordCorrect) {
         res.status(401).json({
             message: "Incorrect password"

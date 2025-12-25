@@ -99,4 +99,39 @@ describe("GET /website/status/:websiteId", ()=>{
 
 })
 
+describe("Should be able to get all websites", ()=>{
+  let jwt2: String, userId2: String
+  beforeAll(async()=>{
+    const data = await createUser()
+    jwt2 = data.jwt,
+    userId2 =  data.id
+  })
+
+  it("Can fetch its own set of websites", async()=>{
+   await axios.post(`${BASE_URL}/v1/website`, {
+      url : "chetankumar.me"
+    }, {
+    headers: {
+      Authorization: `Bearer ${jwt2}`
+    }
+    })
+
+    await axios.post(`${BASE_URL}/v1/website`, {
+      url : "x.com"
+    }, {
+    headers: {
+      Authorization: `Bearer ${jwt2}`
+    }
+    })
+
+      const response = await axios.get(`${BASE_URL}/v1/websites`,{
+        headers: {
+          Authorization: `Bearer ${jwt2}` 
+        }
+      })
+
+      expect( response.data.websites.length == 2, "Incorrect number of websites created")
+  })
+})
+
 })

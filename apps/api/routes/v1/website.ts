@@ -34,8 +34,6 @@ router.post("/", AuthMiddleware, async (req, res) => {
 
 })
 
-
-
 router.get("/status/:websiteId", AuthMiddleware, async (req, res) => {
   try {
     const website = await prismaClient.website.findFirst({
