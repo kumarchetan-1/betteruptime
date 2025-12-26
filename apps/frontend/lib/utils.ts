@@ -5,5 +5,5 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
+// Backend routes are at /api/v1
 export const BACKEND_URL = "http://localhost:3000"

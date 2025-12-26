@@ -30,8 +30,6 @@ router.post("/", AuthMiddleware, async (req, res) => {
       error
     })
   }
-
-
 })
 
 router.get("/status/:websiteId", AuthMiddleware, async (req, res) => {

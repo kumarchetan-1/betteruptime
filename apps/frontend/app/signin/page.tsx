@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { BACKEND_URL } from "@/lib/utils";
 
 const signInSchema = z.object({
   email: z.string().trim().email({ message: "Please enter a valid email address" }),
@@ -20,8 +22,10 @@ type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter()
 
   const form = useForm<SignInFormData>({
+    // @ts-expect-error - Version mismatch between Zod and @hookform/resolvers types
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
@@ -29,9 +33,20 @@ const SignIn = () => {
     },
   });
 
-  const onSubmit = (data: SignInFormData) => {
-    // Visual mockup only - no backend integration
-    console.log("Sign in attempted", data);
+  const onSubmit = async (data: SignInFormData) => {
+     try {
+     const response =  await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
+       data:{
+         username: data.email,
+         password: data.password
+       }
+     })
+
+     localStorage.setItem("token", response.data.jwt)
+     router.push("/dashboard")
+   } catch (error) {
+     console.log(error);
+   }
   };
 
   return (

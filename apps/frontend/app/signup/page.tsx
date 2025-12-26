@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import axios from "axios";
 import { BACKEND_URL } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const signUpSchema = z.object({
   name: z
@@ -38,6 +39,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SignUpFormData>({
     // @ts-expect-error - Version mismatch between Zod and @hookform/resolvers types
@@ -60,15 +62,16 @@ const SignUp = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
+       await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
         data:{
           username: data.email,
           name: data.name,
           password: data.password
         }
       })
+      router.push("/signin")
     } catch (error) {
-      
+      console.log(error);
     }
   };
 
