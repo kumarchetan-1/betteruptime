@@ -1,6 +1,8 @@
 import { prismaClient } from "db/client";
 import { bulkXadd } from "../../packages/redisstream";
 
+
+
 async function main() {
     const websites: { url: string, id: string }[] = await prismaClient.website.findMany({
         select: {

@@ -47,6 +47,9 @@ export async function bulkXadd(websites: WebsiteEvent[]): Promise<void> {
     }
 }
 
+// Cache to track which consumer groups we've already checked/created
+const consumerGroupCache = new Set<string>();
+
 // Check if a consumer group exists
 async function consumerGroupExists(consumerGroup: string): Promise<boolean> {
     try {
@@ -57,11 +60,17 @@ async function consumerGroupExists(consumerGroup: string): Promise<boolean> {
     }
 }
 
-// Create a consumer group if it doesn't exist
+// Create a consumer group if it doesn't exist (only checks once per group)
 async function createConsumerGroup(consumerGroup: string): Promise<void> {
+    // If we've already checked this group, skip
+    if (consumerGroupCache.has(consumerGroup)) {
+        return
+    }
+
     // Check if group already exists
     const exists = await consumerGroupExists(consumerGroup)
     if (exists) {
+        consumerGroupCache.add(consumerGroup)
         console.log(`Consumer group "${consumerGroup}" already exists`)
         return
     }
@@ -71,6 +80,7 @@ async function createConsumerGroup(consumerGroup: string): Promise<void> {
         await client.xGroupCreate(streamName, consumerGroup, '$', {
             MKSTREAM: true // Create stream if it doesn't exist
         })
+        consumerGroupCache.add(consumerGroup)
         console.log(`Consumer group "${consumerGroup}" created`)
     } catch (error) {
         console.error(`Failed to create consumer group "${consumerGroup}":`, error)
