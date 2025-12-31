@@ -17,17 +17,17 @@ async function main() {
     const regions = await Promise.all([
         prismaClient.region.create({
             data: {
-                region: "india"
+                region: "asia"
             }
         }),
         prismaClient.region.create({
             data: {
-                region: "us-east"
+                region: "north-america"
             }
         }),
         prismaClient.region.create({
             data: {
-                region: "us-west"
+                region: "australia"
             }
         }),
         prismaClient.region.create({

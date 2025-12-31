@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/lib/utils";
+import { useSimpleToast } from "@/hooks/use-simple-toast";
 
 const signInSchema = z.object({
   email: z.string().trim().email({ message: "Please enter a valid email address" }),
@@ -23,6 +24,7 @@ type SignInFormData = z.infer<typeof signInSchema>;
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter()
+  const { showToast } = useSimpleToast()
 
   const form = useForm<SignInFormData>({
     // @ts-expect-error - Version mismatch between Zod and @hookform/resolvers types
@@ -41,11 +43,31 @@ const SignIn = () => {
          password: data.password
        }
      })
-
-     localStorage.setItem("token", response.data.jwt)
+      
+     const token = response.data.jwt
+     if (!token) {
+     return showToast({
+        title: response.data.message,
+        description: "Provide valid email/password",
+        variant: "destructive"
+      })
+     }
+     localStorage.setItem("token", token)
      router.push("/dashboard")
    } catch (error) {
-     console.log(error);
+    
+    // Handle axios errors (they have response.data.message)
+    const errorMessage = axios.isAxiosError(error) 
+      ? error.response?.data?.message || error.message || "Failed to sign in"
+      : error instanceof Error
+      ? error.message
+      : "Failed to sign in";
+    
+    showToast({
+        title: errorMessage,
+        description: "Something went wrong, try again",
+        variant: "destructive"
+    })
    }
   };
 

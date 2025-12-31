@@ -1,20 +1,46 @@
 "use client"
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { NavLink } from "@/components/NavLink";
+import { useRouter } from "next/navigation";
 
-const navLinks = [
+const publicNavLinks = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
 ];
 
+const dashboardLink = { name: "Dashboard", path: "/dashboard" };
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathName = usePathname();
+  const [isLoggedIn, setIsLoggedIn ] = useState(false);
+  const router = useRouter()
+
+  useEffect(()=>{
+    const checkAuth = ()=>{
+      const token = localStorage.getItem("token")
+      setIsLoggedIn(!!token)
+    }
+    checkAuth()
+
+    const interval = setInterval(checkAuth, 2*1000)
+
+    window.addEventListener("storage", checkAuth);
+
+    return ()=>{
+      clearInterval(interval)
+      window.removeEventListener("storage", checkAuth)
+    }
+
+  }, [])
+
+  // Combine public links with dashboard if logged in
+  const navLinks = isLoggedIn 
+    ? [...publicNavLinks, dashboardLink]
+    : publicNavLinks;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -34,33 +60,40 @@ export function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link
+              <NavLink
                 key={link.path}
                 href={link.path}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
-                  pathName === link.path
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
+                className="text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                activeClassName="text-primary"
               >
                 {link.name}
-              </Link>
+              </NavLink>
             ))}
           </div>
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/signin">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm" className="gradient-primary text-primary-foreground hover-glow">
-                Start Free Trial
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+                <Button size="sm" className="gradient-primary text-primary-foreground hover-glow" onClick={()=>{
+                  localStorage.removeItem("token");
+                  router.push("/")
+                }}>
+                  Logout
+                </Button>
+            ) : (
+              <>
+                <Link href="/signin">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm" className="gradient-primary text-primary-foreground hover-glow">
+                    Start Free Trial
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -78,32 +111,38 @@ export function Navbar() {
           <div className="md:hidden mt-4 pt-4 border-t border-border/30">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <Link
+                <NavLink
                   key={link.path}
                   href={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary py-2",
-                    pathName === link.path
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  )}
+                  className="text-sm font-medium transition-colors hover:text-primary py-2 text-muted-foreground"
+                  activeClassName="text-primary"
                 >
                   {link.name}
-                </Link>
+                </NavLink>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border/30">
-                <Link href="/signin" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/signup" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="w-full gradient-primary text-primary-foreground">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </div>
+              {isLoggedIn ? (
+                <div className="pt-4 border-t border-border/30">
+                  <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button size="sm" className="w-full gradient-primary text-primary-foreground">
+                      Dashboard
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 pt-4 border-t border-border/30">
+                  <Link href="/signin" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setIsOpen(false)}>
+                    <Button size="sm" className="w-full gradient-primary text-primary-foreground">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

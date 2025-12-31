@@ -32,7 +32,6 @@ async function getRegionId(): Promise<string> {
 }
 
 async function main() {
-  console.log(`🚀 Worker started for region: ${regionName}, worker: ${workerId}`);
   
   while (true) {
     const res = await xReadGroup(regionName, workerId);
@@ -43,16 +42,13 @@ async function main() {
       continue;
     }
 
-    console.log(`📊 Processing ${res.length} website(s)...`);
-
     await Promise.all(
       res.map(({ message }) =>
         fetchWebsite(message.id!, message.url!)
       )
     );
 
-    const resAck = await xAckBulk(regionName, res.map(({ id }) => id))
-    console.log(`✅ Processed and acknowledged ${res.length} message(s)`);
+    await xAckBulk(regionName, res.map(({ id }) => id))
   }
 }
 

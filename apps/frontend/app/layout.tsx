@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
-import { Toaster } from "@/components/ui/toaster";
+import { SimpleToaster } from "@/components/SimpleToaster";
+import { ToastProvider } from "@/hooks/use-simple-toast";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -30,14 +31,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1 pt-24">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
-        </div>
+        <ToastProvider>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1 pt-24">
+              {children}
+            </main>
+            <Footer />
+            <SimpleToaster />
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );
